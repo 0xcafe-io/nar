@@ -1,5 +1,7 @@
 package nar
 
+import "iter"
+
 // Map applies a function to each element of a slice and returns a new slice with the results
 func Map[T any, U any](s []T, f func(T) U) []U {
 	var result []U
@@ -28,4 +30,44 @@ func IndexBy[T any, K comparable](s []T, f func(T) K) map[K]T {
 		result[f(v)] = v
 	}
 	return result
+}
+
+// Zip combines two slices into a sequence of pairs.
+// Iteration stops at the end of the shorter slice.
+func Zip[T1 any, T2 any](s1 []T1, s2 []T2) iter.Seq2[T1, T2] {
+	return func(yield func(T1, T2) bool) {
+		minLen := len(s1)
+		if len(s2) < minLen {
+			minLen = len(s2)
+		}
+		for i := 0; i < minLen; i++ {
+			if !yield(s1[i], s2[i]) {
+				return
+			}
+		}
+	}
+}
+
+// ZipLongest combines two slices into a sequence of pairs.
+// Iteration continues until the longer slice ends, yielding zero values for the shorter slice.
+func ZipLongest[T1 any, T2 any](s1 []T1, s2 []T2) iter.Seq2[T1, T2] {
+	return func(yield func(T1, T2) bool) {
+		maxLen := len(s1)
+		if len(s2) > maxLen {
+			maxLen = len(s2)
+		}
+		for i := 0; i < maxLen; i++ {
+			var v1 T1
+			if i < len(s1) {
+				v1 = s1[i]
+			}
+			var v2 T2
+			if i < len(s2) {
+				v2 = s2[i]
+			}
+			if !yield(v1, v2) {
+				return
+			}
+		}
+	}
 }
