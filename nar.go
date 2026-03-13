@@ -7,11 +7,11 @@ import (
 // Map applies a function to each element of a slice and returns a new slice with the results.
 // Example: Map([]int{1, 2, 3}, func(x int) int { return x * x })
 // returns []int{1, 4, 9}
-func Map[S1 ~[]E1, S2 ~[]E2, E1, E2 any](s S1, f func(E1) E2) S2 {
+func Map[S1 ~[]E1, E1 any, E2 any](s S1, f func(E1) E2) []E2 {
 	if s == nil {
 		return nil
 	}
-	result := make(S2, len(s))
+	result := make([]E2, len(s))
 	for i, v := range s {
 		result[i] = f(v)
 	}
@@ -78,8 +78,8 @@ func GroupBy[S ~[]E, E any, K comparable](s S, f func(E) K) map[K]S {
 // Iteration stops at the end of the shorter slice.
 // Example: for x1, x2 := range Zip([]int{1, 2, 3}, []string{"a", "b"})
 // yields (1, "a"), (2, "b") and then stops.
-func Zip[T1 any, T2 any](s1 []T1, s2 []T2) iter.Seq2[T1, T2] {
-	return func(yield func(T1, T2) bool) {
+func Zip[S1 ~[]E1, S2 ~[]E2, E1 any, E2 any](s1 S1, s2 S2) iter.Seq2[E1, E2] {
+	return func(yield func(E1, E2) bool) {
 		minLen := len(s1)
 		if len(s2) < minLen {
 			minLen = len(s2)
@@ -96,18 +96,18 @@ func Zip[T1 any, T2 any](s1 []T1, s2 []T2) iter.Seq2[T1, T2] {
 // Iteration continues until the longer slice ends, yielding zero values for the shorter slice.
 // Example: for x1, x2 := range ZipLongest([]int{1, 2, 3}, []string{"a", "b"})
 // yields (1, "a"), (2, "b"), (3, "") and then stops.
-func ZipLongest[T1 any, T2 any](s1 []T1, s2 []T2) iter.Seq2[T1, T2] {
-	return func(yield func(T1, T2) bool) {
+func ZipLongest[S1 ~[]E1, S2 ~[]E2, E1 any, E2 any](s1 S1, s2 S2) iter.Seq2[E1, E2] {
+	return func(yield func(E1, E2) bool) {
 		maxLen := len(s1)
 		if len(s2) > maxLen {
 			maxLen = len(s2)
 		}
 		for i := 0; i < maxLen; i++ {
-			var v1 T1
+			var v1 E1
 			if i < len(s1) {
 				v1 = s1[i]
 			}
-			var v2 T2
+			var v2 E2
 			if i < len(s2) {
 				v2 = s2[i]
 			}
